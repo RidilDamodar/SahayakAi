@@ -19,6 +19,10 @@ export interface UserProfile {
   loanPurpose?: string;
   annualFamilyIncome?: string;
   dob?: string;
+  isStudent?: boolean | string;
+  educationalLevel?: string;
+  disabilityStatus?: string;
+  institutionName?: string;
 }
 
 interface AuthContextType {
@@ -73,14 +77,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signup = async (data: { name: string; email: string; businessType?: string; state?: string; dob?: string }): Promise<boolean> => {
     setIsLoading(true);
+    const isStudentProfile = data.businessType === "Student";
     const newUser: UserProfile = {
       name: data.name,
       email: data.email,
       businessType: data.businessType || "Micro Enterprise",
       state: data.state || "Maharashtra",
       dob: data.dob,
-      annualTurnover: "₹5,00,000",
-      loanAmountNeeded: "₹3,00,000",
+      annualTurnover: isStudentProfile ? undefined : "₹5,00,000",
+      loanAmountNeeded: isStudentProfile ? "₹5,00,000" : "₹3,00,000",
+      isStudent: isStudentProfile,
+      educationalLevel: isStudentProfile ? "Undergraduate (Bachelors)" : undefined,
     };
 
     localStorage.setItem("sahayak_user_session", JSON.stringify(newUser));

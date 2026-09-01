@@ -98,5 +98,53 @@ def calculate_recommendation_score(scheme: Dict[str, Any], profile: Dict[str, An
             score += 50
         if stage and "established" in stage:
             score += 45
+            
+    # 10. CSIS Education Loan
+    elif sid == "csis-education-loan":
+        is_student = profile.get("isStudent", False)
+        if not is_student:
+            return 0
+        family_income = int(str(profile.get("annualFamilyIncome", "0")).replace(',', '').replace('₹', ''))
+        if family_income > 450000:
+            return 0
+        score += 85
+        edu_level = profile.get("educationalLevel", "").lower()
+        if "bachelors" in edu_level or "masters" in edu_level:
+            score += 10
+            
+    # 11. Dr. Ambedkar Education Loan
+    elif sid == "dr-ambedkar-education-loan":
+        is_student = profile.get("isStudent", False)
+        if not is_student:
+            return 0
+        is_obc = "obc" in social or "backward" in social
+        is_ebc = "ebc" in social or "economically backward" in social or "general" in social
+        if not is_obc and not is_ebc:
+            return 0
+        family_income = int(str(profile.get("annualFamilyIncome", "0")).replace(',', '').replace('₹', ''))
+        if is_obc and family_income > 800000:
+            return 0
+        if is_ebc and family_income > 250000:
+            return 0
+        score += 85
+        edu_level = profile.get("educationalLevel", "").lower()
+        if "masters" in edu_level or "phd" in edu_level:
+            score += 10
+            
+    # 12. Padho Pardesh
+    elif sid == "padho-pardesh":
+        is_student = profile.get("isStudent", False)
+        if not is_student:
+            return 0
+        is_minority = "minority" in social or "minorities" in social
+        if not is_minority:
+            return 0
+        family_income = int(str(profile.get("annualFamilyIncome", "0")).replace(',', '').replace('₹', ''))
+        if family_income > 600000:
+            return 0
+        score += 85
+        edu_level = profile.get("educationalLevel", "").lower()
+        if "masters" in edu_level or "phd" in edu_level:
+            score += 10
 
     return min(99, max(0, score))

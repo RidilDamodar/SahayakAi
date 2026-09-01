@@ -15,6 +15,7 @@ import {
   MapPin,
   TrendingUp,
   Award,
+  GraduationCap,
 } from "lucide-react";
 
 export default function Home() {
@@ -54,6 +55,13 @@ export default function Home() {
             >
               <span>{t("home.hero.btnExplore")}</span>
             </Link>
+
+            <Link
+              href="/find-education-loan"
+              className="border border-outline hover:border-error bg-surface-card text-on-surface hover:text-error px-8 py-4 rounded-xl font-bold text-sm transition-all flex items-center justify-center gap-2 hover:shadow-md"
+            >
+              <span>For Students</span>
+            </Link>
           </div>
 
           <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-text-secondary font-medium">
@@ -85,7 +93,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {/* Feature 1 */}
             <div className="bg-surface-card border border-outline-variant rounded-2xl p-8 card-glow space-y-4">
               <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold">
@@ -95,7 +103,7 @@ export default function Home() {
               <p className="text-sm text-on-surface-variant leading-relaxed">
                 Test different turnover, loan amount, and collateral scenarios in real-time to see how your scheme match scores and subsidy eligibility change instantly.
               </p>
-              <Link href="/simulator" className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline">
+              <Link href="/simulator" className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline mt-auto">
                 Try Simulator <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -109,7 +117,7 @@ export default function Home() {
               <p className="text-sm text-on-surface-variant leading-relaxed">
                 Calculate monthly EMIs, total interest, and year-by-year repayment schedules. Factor in government margin subsidies for accurate planning.
               </p>
-              <Link href="/calculator" className="inline-flex items-center gap-1 text-xs font-bold text-tertiary hover:underline">
+              <Link href="/calculator" className="inline-flex items-center gap-1 text-xs font-bold text-tertiary hover:underline mt-auto">
                 Calculate EMI &amp; Repayment <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -123,8 +131,22 @@ export default function Home() {
               <p className="text-sm text-on-surface-variant leading-relaxed">
                 Find nearest District Industries Centres (DIC), SIDBI facilitation offices, and authorized bank branches on an interactive map.
               </p>
-              <Link href="/partners" className="inline-flex items-center gap-1 text-xs font-bold text-secondary hover:underline">
+              <Link href="/partners" className="inline-flex items-center gap-1 text-xs font-bold text-secondary hover:underline mt-auto">
                 Find Nearby Hubs <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+
+            {/* Feature 4: Education Loans */}
+            <div className="bg-surface-card border border-outline-variant rounded-2xl p-8 card-glow space-y-4">
+              <div className="w-12 h-12 rounded-xl bg-error/10 text-error flex items-center justify-center font-bold">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <h3 className="font-headline font-bold text-xl text-on-surface">Student Education Loans</h3>
+              <p className="text-sm text-on-surface-variant leading-relaxed">
+                Discover government-backed interest subsidy schemes and zero-collateral education loans for higher studies in India and abroad.
+              </p>
+              <Link href="/find-education-loan" className="inline-flex items-center gap-1 text-xs font-bold text-error hover:underline mt-auto">
+                Find Student Loans <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>

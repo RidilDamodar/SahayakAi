@@ -77,3 +77,59 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: #9f3c00;
 }
+
+/* Glassmorphism Utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(159, 60, 0, 0.1);
+}
+
+/* Moving Glow Border Effect */
+.glow-border {
+  position: relative;
+  z-index: 1;
+}
+.glow-border::before {
+  content: "";
+  position: absolute;
+  top: -2px; left: -2px; right: -2px; bottom: -2px;
+  background: linear-gradient(45deg, #9f3c00, #fdbb33, #c74e00, #9f3c00);
+  background-size: 400%;
+  z-index: -1;
+  border-radius: inherit;
+  animation: glow-animation 12s linear infinite;
+  opacity: 0.3;
+  transition: opacity 0.3s ease-in-out;
+}
+.glow-border:hover::before {
+  opacity: 0.8;
+}
+
+@keyframes glow-animation {
+  0% { background-position: 0 0; }
+  50% { background-position: 400% 0; }
+  100% { background-position: 0 0; }
+}
+
+/* Floating Animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Pulsing Glow Animation */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 10px rgba(159,60,0, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(255,115,0, 0.5); }
+  100% { box-shadow: 0 0 10px rgba(159,60,0, 0.2); }
+}
+.animate-pulse-glow {
+  animation: pulse-glow 3s infinite;
+}

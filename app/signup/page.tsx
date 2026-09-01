@@ -78,9 +78,9 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-[85vh] py-16 px-6 flex items-center justify-center bg-sunset-radial">
-      <div className="w-full max-w-lg bg-surface-card border border-outline-variant rounded-2xl p-8 shadow-2xl space-y-6 relative overflow-hidden card-glow">
+      <div className="w-full max-w-lg glass-panel rounded-3xl p-8 space-y-6 relative card-glow">
         {/* Glow Accent Header Bar */}
-        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-tertiary via-primary to-secondary"></div>
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-tertiary via-primary to-secondary rounded-t-3xl"></div>
 
         <div className="text-center space-y-2 pt-2">
           <Link href="/" className="inline-block mb-2">
@@ -204,7 +204,7 @@ export default function SignupPage() {
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">
-                    Enterprise Category
+                    Profile Type
                   </label>
                   <div className="relative">
                     <Building2 className="w-4 h-4 text-text-secondary absolute left-3 top-3.5" />
@@ -218,6 +218,7 @@ export default function SignupPage() {
                       <option value="Artisan / Craftsperson">Artisan / PM Vishwakarma</option>
                       <option value="Woman Entrepreneur">Woman-Led Business</option>
                       <option value="Startup">Tech / Greenfield Startup</option>
+                      <option value="Student">Student (Education Loans)</option>
                     </select>
                   </div>
                 </div>

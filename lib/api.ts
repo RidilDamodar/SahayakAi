@@ -17,6 +17,7 @@ export interface Scheme {
   defaultInterestRate?: number;
   defaultTenureYears?: number;
   subsidyPercent?: number;
+  isNew?: boolean;
 }
 
 export interface PartnerCenter {
@@ -171,13 +172,14 @@ export const MOCK_SCHEMES: Scheme[] = [
     ]
   },
   {
-    id: "standup-india",
+    id: "stand-up-india",
     name: "Stand-Up India Scheme",
-    category: "Greenfield Enterprise Loan",
+    category: "Loans & Subsidies",
     ministry: "Ministry of Finance",
-    description: "Bank loans between ₹10 Lakhs and ₹1 Crore to at least one SC/ST borrower and one Woman borrower per bank branch.",
-    maxSubsidy: "Low Interest Rates & Margin Support",
+    description: "Bank loans between ₹10 lakh and ₹1 Crore to at least one SC/ST borrower and one woman borrower per bank branch.",
+    maxSubsidy: "Credit Guarantee Available",
     maxLoan: "₹1,00,00,000",
+    isNew: true,
     matchScore: 85,
     readinessScore: 70,
     targetAudience: "Women Entrepreneurs & SC/ST Business Owners",
@@ -420,6 +422,100 @@ export const MOCK_SCHEMES: Scheme[] = [
       "Audited Balance Sheet & CA Certificate",
       "Udyam & GST Registration"
     ]
+  },
+  {
+    id: "csis-education-loan",
+    name: "Central Scheme of Interest Subsidy for Education Loans (CSIS)",
+    category: "Education Loan",
+    ministry: "Ministry of Education",
+    description: "Full interest subsidy during the moratorium period on education loans for students from Economically Weaker Sections (EWS).",
+    maxSubsidy: "100% Interest Subsidy during Moratorium",
+    maxLoan: "₹7,50,000",
+    isNew: true,
+    matchScore: 85,
+    readinessScore: 80,
+    targetAudience: "Students pursuing technical/professional courses in India",
+    collateralRequired: false,
+    defaultInterestRate: 8.5,
+    defaultTenureYears: 5,
+    subsidyPercent: 100,
+    keyBenefits: [
+      "100% Interest subsidy during the course period plus one year",
+      "No collateral or third-party guarantee required up to ₹7.5 Lakhs",
+      "Applicable for recognized technical and professional courses in India"
+    ],
+    eligibility: [
+      "Student from Economically Weaker Section (EWS) with family income up to ₹4.5 Lakhs",
+      "Enrolled in professional/technical courses in recognized institutions in India",
+      "Loan taken under IBA Model Education Loan Scheme"
+    ],
+    requiredDocuments: [
+      "Income Certificate issued by competent authority",
+      "Admission letter from recognized institution",
+      "Aadhaar and PAN Card"
+    ]
+  },
+  {
+    id: "dr-ambedkar-education-loan",
+    name: "Dr. Ambedkar Central Sector Scheme of Interest Subsidy",
+    category: "Education Loan",
+    ministry: "Ministry of Social Justice & Empowerment",
+    description: "Interest subsidy on educational loans for overseas studies for Other Backward Classes (OBC) and Economically Backward Classes (EBC).",
+    maxSubsidy: "100% Interest Subsidy during Moratorium",
+    maxLoan: "₹20,00,000",
+    matchScore: 88,
+    readinessScore: 78,
+    targetAudience: "OBC and EBC students studying abroad",
+    collateralRequired: false,
+    defaultInterestRate: 9.0,
+    defaultTenureYears: 7,
+    subsidyPercent: 100,
+    keyBenefits: [
+      "Full interest subsidy during the moratorium period (course period + 1 year or 6 months after getting job)",
+      "Supports higher studies (Masters, M.Phil, Ph.D) abroad",
+      "Enhances employability by supporting global education"
+    ],
+    eligibility: [
+      "Belonging to OBC or EBC categories",
+      "Total income from all sources shall not exceed ₹8.00 Lakh per annum for OBC and ₹2.50 Lakh for EBC",
+      "Admission secured for approved courses abroad"
+    ],
+    requiredDocuments: [
+      "Caste Certificate (for OBC)",
+      "Income Certificate",
+      "Admission letter from foreign university"
+    ]
+  },
+  {
+    id: "padho-pardesh",
+    name: "Padho Pardesh Scheme of Interest Subsidy",
+    category: "Education Loan",
+    ministry: "Ministry of Minority Affairs",
+    description: "Scheme of interest subsidy on educational loans for overseas studies for the students belonging to the Minority Communities.",
+    maxSubsidy: "100% Interest Subsidy during Moratorium",
+    maxLoan: "₹20,00,000",
+    matchScore: 90,
+    readinessScore: 82,
+    targetAudience: "Minority community students studying abroad",
+    collateralRequired: false,
+    defaultInterestRate: 9.0,
+    defaultTenureYears: 7,
+    subsidyPercent: 100,
+    keyBenefits: [
+      "Complete interest subsidy during the period of study plus one year",
+      "Promotes educational advancement among minority communities",
+      "Supported for Masters, M.Phil, and Ph.D levels abroad"
+    ],
+    eligibility: [
+      "Student must belong to minority communities (Muslim, Christian, Sikh, Buddhist, Jain, Parsi)",
+      "Total income from all sources should not exceed ₹6.00 Lakh per annum",
+      "Must have secured admission in a university abroad"
+    ],
+    requiredDocuments: [
+      "Minority Certificate / Self-Declaration",
+      "Income Certificate (below ₹6.00 Lakhs)",
+      "Admission letter for foreign studies"
+    ]
   }
 ];
 
@@ -544,6 +640,41 @@ export function filterApplicableSchemes(schemes: Scheme[], user: any): Scheme[] 
       if (!cat.includes("manufacturing")) return false;
     }
 
+    // Education Loans Rules
+    const isStudent = (user.isStudent === true) || (user.isStudent === "true");
+    const familyIncome = parseInt(user.annualFamilyIncome?.replace(/\D/g, "") || "0", 10);
+    
+    if (sid === "csis-education-loan") {
+      if (!isStudent) return false;
+      if (familyIncome > 450000) return false; // CSIS requires income <= 4.5L
+    }
+
+    if (sid === "dr-ambedkar-education-loan") {
+      if (!isStudent) return false;
+      const isOBC = social.includes("obc") || social.includes("backward");
+      const isEBC = social.includes("ebc") || social.includes("economically backward") || social.includes("general");
+      
+      if (!isOBC && !isEBC) return false;
+      if (isOBC && familyIncome > 800000) return false;
+      if (isEBC && familyIncome > 250000) return false;
+    }
+
+    if (sid === "padho-pardesh") {
+      if (!isStudent) return false;
+      const isMinority = social.includes("minority") || social.includes("minorities");
+      if (!isMinority) return false;
+      if (familyIncome > 600000) return false;
+    }
+
+    // Ensure non-student schemes are not shown to students seeking education loans
+    // Assuming if `isStudent` is true, we only show education loans.
+    if (isStudent && scheme.category !== "Education Loan") {
+       return false;
+    }
+    if (!isStudent && scheme.category === "Education Loan") {
+       return false;
+    }
+
     // Default: Applicable
     return true;
   });
@@ -592,6 +723,15 @@ export function getDynamicSchemeMatchScore(scheme: Scheme, user: any): number {
     if (scheme.id === "msme-zed") {
       if (cat.includes("manufacturing") && stage.includes("established")) score = Math.max(score, 95);
       if (purpose.includes("tech upgrade") || purpose.includes("export")) score = Math.max(score, 98);
+    }
+    if (scheme.id === "csis-education-loan") {
+      if (user.educationalLevel && (user.educationalLevel.toLowerCase().includes("bachelors") || user.educationalLevel.toLowerCase().includes("masters"))) score = Math.max(score, 94);
+    }
+    if (scheme.id === "dr-ambedkar-education-loan") {
+      if (user.educationalLevel && (user.educationalLevel.toLowerCase().includes("masters") || user.educationalLevel.toLowerCase().includes("phd"))) score = Math.max(score, 96);
+    }
+    if (scheme.id === "padho-pardesh") {
+      if (user.educationalLevel && (user.educationalLevel.toLowerCase().includes("masters") || user.educationalLevel.toLowerCase().includes("phd"))) score = Math.max(score, 95);
     }
   }
   return score;
@@ -693,6 +833,21 @@ export function getIneligibleSchemesWithReasons(schemes: Scheme[], user: any): {
     } else if (sid === "msme-zed") {
       if (stage && stage.includes("idea")) reason = "Requires an established, operational business.";
       else if (!cat.includes("manufacturing")) reason = "Applicable only to the Manufacturing sector.";
+    } else if (sid === "csis-education-loan") {
+      const familyIncome = parseInt(user.annualFamilyIncome?.replace(/\D/g, "") || "0", 10);
+      if (familyIncome > 450000) reason = "Family income must be below ₹4.5 Lakhs per annum.";
+    } else if (sid === "dr-ambedkar-education-loan") {
+      const familyIncome = parseInt(user.annualFamilyIncome?.replace(/\D/g, "") || "0", 10);
+      const isOBC = social.includes("obc") || social.includes("backward");
+      const isEBC = social.includes("ebc") || social.includes("economically backward") || social.includes("general");
+      if (!isOBC && !isEBC) reason = "Only applicable for OBC and EBC students.";
+      else if (isOBC && familyIncome > 800000) reason = "OBC family income must be below ₹8.0 Lakhs.";
+      else if (isEBC && familyIncome > 250000) reason = "EBC family income must be below ₹2.5 Lakhs.";
+    } else if (sid === "padho-pardesh") {
+      const familyIncome = parseInt(user.annualFamilyIncome?.replace(/\D/g, "") || "0", 10);
+      const isMinority = social.includes("minority") || social.includes("minorities");
+      if (!isMinority) reason = "Only applicable for Minority community students.";
+      else if (familyIncome > 600000) reason = "Family income must be below ₹6.0 Lakhs.";
     }
 
     if (reason) {
@@ -700,4 +855,12 @@ export function getIneligibleSchemesWithReasons(schemes: Scheme[], user: any): {
     }
   }
   return reasons;
+}
+
+export function getNewMatchingSchemes(schemes: Scheme[], userProfile: any): Scheme[] {
+  if (!userProfile) return [];
+  // Get all matches
+  const allMatches = getTopMatchedSchemes(schemes, userProfile, schemes.length);
+  // Filter out only the "new" ones
+  return allMatches.filter(s => s.isNew);
 }
