@@ -87,6 +87,7 @@ export default function PartnersPage() {
   const [selectedPartner, setSelectedPartner] = useState<PartnerCenter | null>(null);
   const [pincodeSearch, setPincodeSearch] = useState(user?.pincode || "");
   const [loadingCoords, setLoadingCoords] = useState(false);
+  const [searchError, setSearchError] = useState("");
 
   useEffect(() => {
     async function loadDataAndSort() {
@@ -94,6 +95,7 @@ export default function PartnersPage() {
 
       if (pincodeSearch.length === 6 && /^\d+$/.test(pincodeSearch)) {
         setLoadingCoords(true);
+        setSearchError("");
         try {
           const res = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincodeSearch}&country=india&format=json&addressdetails=1`);
           const data = await res.json();
@@ -113,9 +115,14 @@ export default function PartnersPage() {
               ...p,
               distanceKm: getDistance(userLat, userLng, p.lat, p.lng)
             })).sort((a, b) => (a.distanceKm || 0) - (b.distanceKm || 0));
+          } else {
+            setSearchError("We couldn't find any facilitation centers for this specific pincode. Please try a nearby pincode.");
+            currentPartners = [];
           }
         } catch (e) {
           console.error("Failed to geocode pincode", e);
+          setSearchError("Service temporarily unavailable. Please try again later.");
+          currentPartners = [];
         } finally {
           setLoadingCoords(false);
         }
@@ -166,6 +173,18 @@ export default function PartnersPage() {
             />
             {loadingCoords && <Loader2 className="w-4 h-4 text-primary animate-spin absolute right-4" />}
           </div>
+
+          {searchError && (
+            <div className="bg-error/10 border border-error/20 text-error text-xs font-bold p-3 rounded-xl">
+              {searchError}
+            </div>
+          )}
+
+          {partners.length === 0 && !loadingCoords && !searchError && (
+            <div className="text-center p-6 text-on-surface-variant text-xs font-bold border border-outline-variant/60 rounded-xl bg-surface-container-low/50">
+              No facilitation centers found.
+            </div>
+          )}
 
           <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
             {partners.map((p) => {

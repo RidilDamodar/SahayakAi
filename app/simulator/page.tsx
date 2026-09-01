@@ -4,20 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Sparkles, Sliders, CheckCircle2, ArrowRight, TrendingUp, AlertCircle, RefreshCw } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { MOCK_SCHEMES, getTopMatchedSchemes, Scheme } from "@/lib/api";
-
-function parseMaxLoan(maxLoanStr: string) {
-  if (!maxLoanStr) return 1000000;
-  const rawStr = maxLoanStr.toString().replace(/,/g, "");
-  const nums = rawStr.match(/\d+/g);
-  if (nums && nums.length > 0) {
-    let n = parseInt(nums[0], 10);
-    if (rawStr.toLowerCase().includes("lakh") && n < 100) n = n * 100000;
-    if (rawStr.toLowerCase().includes("crore") && n < 100) n = n * 10000000;
-    return n;
-  }
-  return 1000000;
-}
+import { MOCK_SCHEMES, getTopMatchedSchemes, Scheme, parseLoanAmount, getIneligibleSchemesWithReasons } from "@/lib/api";
 
 export default function SimulatorPage() {
   const { user } = useAuth();
@@ -34,8 +21,7 @@ export default function SimulatorPage() {
     // Determine initial loan amount from user profile if available
     let initialLoan = 300000;
     if (user?.loanAmountNeeded) {
-      const parsed = parseMaxLoan(user.loanAmountNeeded);
-      if (parsed) initialLoan = parsed;
+      initialLoan = parseLoanAmount(user.loanAmountNeeded);
     }
     setLoanAmount(initialLoan);
 
@@ -49,7 +35,7 @@ export default function SimulatorPage() {
     let base = scheme.matchScore || 80;
     if (!hasChanged) return base; // Only recalculate after user adjusts inputs
 
-    const maxLoanNum = parseMaxLoan(scheme.maxLoan);
+    const maxLoanNum = parseLoanAmount(scheme.maxLoan);
     
     // Impact of Loan Amount
     if (loanAmount > maxLoanNum) {
@@ -85,7 +71,7 @@ export default function SimulatorPage() {
 
   const getStatusMessage = (scheme: Scheme, score: number) => {
     if (!hasChanged) return scheme.description;
-    const maxLoanNum = parseMaxLoan(scheme.maxLoan);
+    const maxLoanNum = parseLoanAmount(scheme.maxLoan);
     if (loanAmount > maxLoanNum) {
       return `Warning: Requested loan amount exceeds the scheme's maximum limit of ${scheme.maxLoan}.`;
     }

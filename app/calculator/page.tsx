@@ -4,6 +4,7 @@
 import React, { useState, useMemo, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import {
   Calculator,
   Percent,
@@ -20,14 +21,21 @@ import {
   Building2,
   RefreshCw,
 } from "lucide-react";
-import { MOCK_SCHEMES, Scheme } from "@/lib/api";
+import { MOCK_SCHEMES, Scheme, parseLoanAmount } from "@/lib/api";
 
 function EmiCalculatorContent() {
   const searchParams = useSearchParams();
   const schemeParam = searchParams.get("scheme");
 
+  const { user } = useAuth();
+  
   const [selectedSchemeId, setSelectedSchemeId] = useState<string>(schemeParam || "");
-  const [loanAmount, setLoanAmount] = useState<number>(500000);
+  const [loanAmount, setLoanAmount] = useState<number>(() => {
+    if (user?.loanAmountNeeded) {
+      return parseLoanAmount(user.loanAmountNeeded);
+    }
+    return 500000;
+  });
   const [interestRate, setInterestRate] = useState<number>(8.5);
   const [tenureYears, setTenureYears] = useState<number>(5);
   const [subsidyPct, setSubsidyPct] = useState<number>(0);
@@ -48,13 +56,15 @@ function EmiCalculatorContent() {
       if (target.defaultTenureYears !== undefined) setTenureYears(target.defaultTenureYears);
       if (target.subsidyPercent !== undefined) setSubsidyPct(target.subsidyPercent);
 
-      // Parse numerical max loan
-      const nums = target.maxLoan.replace(/,/g, "").match(/\d+/g);
-      if (nums && nums.length > 0) {
-        let amt = parseInt(nums[0], 10);
-        if (target.maxLoan.toLowerCase().includes("lakh") && amt < 100) amt = amt * 100000;
-        if (target.maxLoan.toLowerCase().includes("crore") && amt < 100) amt = amt * 10000000;
-        setLoanAmount(amt);
+      let userAmt = 0;
+      if (user?.loanAmountNeeded) {
+        userAmt = parseLoanAmount(user.loanAmountNeeded);
+      }
+
+      if (userAmt > 0) {
+        setLoanAmount(userAmt);
+      } else {
+        setLoanAmount(parseLoanAmount(target.maxLoan));
       }
     }
   };

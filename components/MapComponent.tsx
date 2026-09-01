@@ -43,8 +43,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     shadowSize: [41, 41],
   });
 
-  const centerLat = partners[0]?.lat || 19.0657;
-  const centerLng = partners[0]?.lng || 72.8686;
+  const activePartner = partners.find(p => p.id === selectedPartnerId) || partners[0];
+  const centerLat = activePartner?.lat || 19.0657;
+  const centerLng = activePartner?.lng || 72.8686;
 
   const MapUpdater = ({ lat, lng }: { lat: number; lng: number }) => {
     const map = useMap();

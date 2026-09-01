@@ -32,6 +32,22 @@ export interface PartnerCenter {
   distanceKm?: number;
 }
 
+export function parseLoanAmount(valStr?: string | number): number {
+  if (!valStr) return 300000;
+  const str = valStr.toString().toLowerCase().replace(/,/g, "");
+  const nums = str.match(/\d+(\.\d+)?/g);
+  if (nums && nums.length > 0) {
+    let n = parseFloat(nums[0]);
+    if (str.includes("lakh") || str.includes("lk") || str.includes("lac")) {
+      if (n < 10000) n = n * 100000;
+    } else if (str.includes("crore") || str.includes("cr")) {
+      if (n < 10000) n = n * 10000000;
+    }
+    return Math.round(n);
+  }
+  return 300000;
+}
+
 export const INDIAN_STATES_AND_UTS: string[] = [
   "Andhra Pradesh",
   "Arunachal Pradesh",
@@ -471,16 +487,7 @@ export function filterApplicableSchemes(schemes: Scheme[], user: any): Scheme[] 
   // Parse numerical loan amount needed from string
   let loanVal = 300000;
   if (user.loanAmountNeeded) {
-    const rawStr = user.loanAmountNeeded.toString().replace(/,/g, "");
-    const nums = rawStr.match(/\d+/g);
-    if (nums && nums.length > 0) {
-      loanVal = parseInt(nums[0], 10);
-      if (rawStr.toLowerCase().includes("lakh") && loanVal < 100) {
-        loanVal = loanVal * 100000;
-      } else if (rawStr.toLowerCase().includes("crore") && loanVal < 100) {
-        loanVal = loanVal * 10000000;
-      }
-    }
+    loanVal = parseLoanAmount(user.loanAmountNeeded);
   }
 
   const gender = (user.gender || "").toLowerCase();
@@ -642,4 +649,55 @@ export async function fetchPartnerCenters(city = "Mumbai"): Promise<PartnerCente
     console.warn("Backend API unavailable, using fallback mock partners:", err);
   }
   return MOCK_PARTNERS.filter((p) => (p.distanceKm ?? 0) <= 20.0);
+}
+
+export function getIneligibleSchemesWithReasons(schemes: Scheme[], user: any): { scheme: Scheme, reason: string }[] {
+  if (!user) return [];
+  const reasons: { scheme: Scheme, reason: string }[] = [];
+  
+  const loanVal = parseLoanAmount(user.loanAmountNeeded);
+  const gender = (user.gender || "").toLowerCase();
+  const social = (user.socialCategory || "").toLowerCase();
+  const busType = (user.businessType || "").toLowerCase();
+  const cat = (user.category || "").toLowerCase();
+  const stage = (user.businessStage || "").toLowerCase();
+
+  for (const scheme of schemes) {
+    const sid = scheme.id.toLowerCase();
+    let reason = "";
+
+    if (sid === "standup-india") {
+      const isFemale = gender.includes("female") || gender.includes("woman") || busType.includes("women");
+      const isScSt = social.includes("sc") || social.includes("st") || social.includes("caste") || social.includes("tribe");
+      if (!isFemale && !isScSt) reason = "Requires applicant to be Female or from SC/ST category.";
+      else if (stage && !stage.includes("idea") && !stage.includes("new")) reason = "Available for Greenfield (New) projects only.";
+    } else if (sid === "pm-vishwakarma") {
+      const isArtisan = busType.includes("artisan") || busType.includes("craft") || cat.includes("handicraft") || cat.includes("traditional") || busType.includes("micro");
+      if (!isArtisan && (busType.includes("tech") || busType.includes("corporate") || busType.includes("medium"))) {
+        reason = "Exclusive to traditional artisans and craftspeople.";
+      }
+    } else if (sid === "pm-svanidhi") {
+      if (loanVal > 200000 && !busType.includes("vendor") && !cat.includes("street")) {
+        reason = "Designed for Street Vendors or micro-loans under ₹2 Lakhs.";
+      }
+    } else if (sid === "startup-india-seed-fund") {
+      const isStartup = busType.includes("startup") || busType.includes("tech") || cat.includes("tech") || cat.includes("innovation") || cat.includes("software");
+      if (!isStartup) reason = "Only for DPIIT recognized Tech Startups/Innovations.";
+    } else if (sid === "nabard-agri-loan") {
+      const isAgri = busType.includes("agri") || busType.includes("farm") || cat.includes("agri") || cat.includes("food") || cat.includes("rural");
+      if (!isAgri) reason = "Strictly for Agriculture, Farming, and Rural businesses.";
+    } else if (sid === "pmegp") {
+      if (stage && !stage.includes("idea") && !stage.includes("new")) {
+        reason = "Only new (Greenfield) projects are eligible.";
+      }
+    } else if (sid === "msme-zed") {
+      if (stage && stage.includes("idea")) reason = "Requires an established, operational business.";
+      else if (!cat.includes("manufacturing")) reason = "Applicable only to the Manufacturing sector.";
+    }
+
+    if (reason) {
+      reasons.push({ scheme, reason });
+    }
+  }
+  return reasons;
 }
