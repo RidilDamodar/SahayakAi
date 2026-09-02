@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useLanguage } from "@/lib/language-context";
-import { Globe, User, LogOut, Menu, X, ChevronDown, Sliders, ShieldCheck, Bell } from "lucide-react";
+import { Globe, User, LogOut, Menu, X, ChevronDown, Sliders, ShieldCheck, Bell, Sparkles } from "lucide-react";
 import { getNewMatchingSchemes, MOCK_SCHEMES } from "@/lib/api";
 
 export const Navbar: React.FC = () => {
